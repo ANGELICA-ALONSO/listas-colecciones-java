@@ -1,5 +1,6 @@
 package com.aluracursos.screenmatch.principal;
 
+import com.aluracursos.screenmatch.exceptions.ErrorEnConversionDeDuracionException;
 import com.aluracursos.screenmatch.modelos.Titulo;
 import com.aluracursos.screenmatch.modelos.TituloOmdb;
 import com.google.gson.FieldNamingPolicy;
@@ -24,26 +25,41 @@ public class PrincipalConBusqueda {
         System.out.println("Escriba el nombre de una pelicula: ");
         var busqueda = lectura.nextLine();
 
-        String direccion = "https://www.omdbapi.com/?t=" + busqueda + "&apikey=34fda6c7";
+        String direccion = "https://www.omdbapi.com/?t=" +
+                busqueda.replace(" ", "+") +
+                "&apikey=34fda6c7";
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(direccion))
-                .build();
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(direccion))
+                    .build();
 
-        HttpResponse<String> response = client
-                .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client
+                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-        String json = response.body();
-        System.out.println(json);
+            String json = response.body();
+            System.out.println(json);
 
 
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                .create();
-        TituloOmdb miTitulooMDB = gson.fromJson(json, TituloOmdb.class);
-        System.out.println(miTitulooMDB);
-        Titulo miTitulo = new Titulo(miTitulooMDB);
-        System.out.println(miTitulo);
+            Gson gson = new GsonBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                    .create();
+            TituloOmdb miTitulooMDB = gson.fromJson(json, TituloOmdb.class);
+            System.out.println(miTitulooMDB);
+
+
+            Titulo miTitulo = new Titulo(miTitulooMDB);
+            System.out.println("----Titulo ya convertido: " + miTitulo);
+        } catch (NumberFormatException e) {
+            System.out.println("Ocurrió un error: ");
+            System.out.println(e.getMessage());
+        } catch (IllegalArgumentException e){
+            System.out.println("Error el URI, verifique la dirección.");
+        } catch (ErrorEnConversionDeDuracionException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println(" ¡Finalizó la ejecución del programa! ");
+
     }
 }
